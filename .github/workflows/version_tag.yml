@@ -2,6 +2,7 @@ name: Release Binaries
 permissions: write-all
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
