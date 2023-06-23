@@ -2,7 +2,7 @@
   "name": "time-quality",
   "description": "",
   "version": "v1.0",
-  "data": {
-    "max": 1
+  "properties": {
+    "tq.timer": "10s"
   }
 }
