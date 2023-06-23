@@ -54,7 +54,7 @@ func Install(env *plugin.Environment) error {
 		return err
 	}
 
-	var config Config
+	var config plugin.Config
 	configFile, err := os.ReadFile(configFilePath)
 
 	if err != nil {
@@ -93,7 +93,7 @@ func Name() string {
 	return fmt.Sprintf("%s@%s", pluginName, pluginVersion)
 }
 
-func setupTimer(config Config) error {
+func setupTimer(config plugin.Config) error {
 	var err error
 	if exists := config.Properties[timerProperty]; exists == nil {
 		log.Warnf("no tickerDuration set, defaulting to [%s]", timerPropertyDefault)

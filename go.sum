@@ -14,6 +14,8 @@ github.com/ekimeel/sabal-plugin v0.1.13 h1:8jwzorjzqXQ2BiA/76lv6GptZmzRYebzLMiX3
 github.com/ekimeel/sabal-plugin v0.1.13/go.mod h1:3F9csIVnXwUu4PDZpuOhruhoNbg9uXa34SOs8zNXXac=
 github.com/ekimeel/sabal-plugin v0.1.14 h1:cjB64PQcLfbGJNBTF4sB/BTj673e6ri+3O/Znnie8Ic=
 github.com/ekimeel/sabal-plugin v0.1.14/go.mod h1:3F9csIVnXwUu4PDZpuOhruhoNbg9uXa34SOs8zNXXac=
+github.com/ekimeel/sabal-plugin v0.1.15 h1:cap7MRqdB6LdklFpoMXIMu1NbS6nOtTfE/V8GpADEW0=
+github.com/ekimeel/sabal-plugin v0.1.15/go.mod h1:3F9csIVnXwUu4PDZpuOhruhoNbg9uXa34SOs8zNXXac=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
