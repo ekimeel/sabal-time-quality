@@ -1,4 +1,4 @@
-package main
+package tq
 
 import (
 	"database/sql"
@@ -7,10 +7,8 @@ import (
 	"time"
 )
 
-type dao struct {
-}
-
 var (
+	DB           *sql.DB
 	singletonDao *dao
 	onceDao      sync.Once
 )
@@ -62,14 +60,40 @@ const (
     `
 )
 
+type dao struct {
+	insertStmt          *sql.Stmt
+	updateStmt          *sql.Stmt
+	selectByPointIdStmt *sql.Stmt
+}
+
 func getDao() *dao {
 	onceDao.Do(func() {
+		singletonDao = &dao{}
+		var err error
+
 		singletonDao.createTableIfNotExists()
+
+		// Prepare the SQL statements
+		singletonDao.insertStmt, err = DB.Prepare(sqlInsert)
+		if err != nil {
+			panic(fmt.Sprintf("failed to prepare insert statement: %v", err))
+		}
+
+		singletonDao.updateStmt, err = DB.Prepare(sqlUpdate)
+		if err != nil {
+			panic(fmt.Sprintf("failed to prepare update statement: %v", err))
+		}
+
+		singletonDao.selectByPointIdStmt, err = DB.Prepare(sqlSelectByPointId)
+		if err != nil {
+			panic(fmt.Sprintf("failed to prepare select statement: %v", err))
+		}
+
 	})
 	return singletonDao
 }
 func (dao *dao) createTableIfNotExists() {
-	_, err := db.Exec(`
+	_, err := DB.Exec(`
 		CREATE TABLE IF NOT EXISTS plugin_time_quality (
 			id INTEGER PRIMARY KEY,
 			point_id INTEGER,
@@ -94,7 +118,7 @@ func (dao *dao) createTableIfNotExists() {
 }
 
 func (dao *dao) insert(tq *TimeQuality) (int64, error) {
-	result, err := db.Exec(
+	result, err := dao.insertStmt.Exec(
 		sqlInsert,
 		tq.PointId,
 		time.Now(),
@@ -135,7 +159,7 @@ func (dao *dao) insert(tq *TimeQuality) (int64, error) {
 
 func (dao *dao) update(tq *TimeQuality) (int64, error) {
 
-	result, err := db.Exec(sqlUpdate,
+	result, err := dao.updateStmt.Exec(sqlUpdate,
 		time.Now(),
 		tq.Start,
 		tq.End,
@@ -163,7 +187,7 @@ func (dao *dao) update(tq *TimeQuality) (int64, error) {
 
 func (dao *dao) selectByPointId(pointID uint32) (*TimeQuality, error) {
 
-	row := db.QueryRow(sqlSelectByPointId, pointID)
+	row := dao.selectByPointIdStmt.QueryRow(sqlSelectByPointId, pointID)
 	var tq TimeQuality
 
 	err := row.Scan(

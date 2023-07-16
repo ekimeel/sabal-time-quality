@@ -1,8 +1,0 @@
-{
-  "name": "time-quality",
-  "description": "",
-  "version": "v1.0",
-  "properties": {
-    "tq.timer": "10s"
-  }
-}
