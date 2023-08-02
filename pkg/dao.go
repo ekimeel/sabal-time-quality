@@ -28,19 +28,7 @@ const (
         fill_factor,
         score
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT (point_id) DO UPDATE SET
-        last_updated = ?,
-        start_time = ?,
-        end_time = ?,
-        evals = ?,
-        mean_wait = ?,
-        max_wait = ?,
-        min_wait = ?,
-        cv_wait = ?,
-        sd_wait = ?,
-        fill_factor = ?,
-        score = ?`
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	sqlUpdate = `UPDATE plugin_time_quality
         SET last_updated = ?,
             start_time = ?,
@@ -119,19 +107,7 @@ func (dao *dao) createTableIfNotExists() {
 
 func (dao *dao) insert(tq *TimeQuality) (int64, error) {
 	result, err := dao.insertStmt.Exec(
-		sqlInsert,
 		tq.PointId,
-		time.Now(),
-		tq.Start,
-		tq.End,
-		tq.Count,
-		tq.MeanWait,
-		tq.MaxWait,
-		tq.MinWait,
-		tq.WaitCoefficientOfVariation,
-		tq.WaitStandardDeviation,
-		tq.FillFactor,
-		tq.Score,
 		time.Now(),
 		tq.Start,
 		tq.End,
@@ -159,7 +135,7 @@ func (dao *dao) insert(tq *TimeQuality) (int64, error) {
 
 func (dao *dao) update(tq *TimeQuality) (int64, error) {
 
-	result, err := dao.updateStmt.Exec(sqlUpdate,
+	result, err := dao.updateStmt.Exec(
 		time.Now(),
 		tq.Start,
 		tq.End,
@@ -187,7 +163,7 @@ func (dao *dao) update(tq *TimeQuality) (int64, error) {
 
 func (dao *dao) selectByPointId(pointID uint32) (*TimeQuality, error) {
 
-	row := dao.selectByPointIdStmt.QueryRow(sqlSelectByPointId, pointID)
+	row := dao.selectByPointIdStmt.QueryRow(pointID)
 	var tq TimeQuality
 
 	err := row.Scan(

@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	PluginName    = "timeQuality"
+	PluginVersion = "v1.0"
+)
+
 var (
 	singletonService *Service
 	onceService      sync.Once
@@ -28,11 +33,11 @@ func GetService() *Service {
 	return singletonService
 }
 
-func (s *Service) dowork(pointId uint32, metrics []*pb.Metric) {
+func (s *Service) compute(pointId uint32, metrics []*pb.Metric) {
 	cur, err := s.dao.selectByPointId(pointId)
 
 	if cur == nil {
-		log.Tracef("no existing tqp entry, creating new")
+		log.WithField("plugin", PluginName).Tracef("no existing tqp entry, creating new")
 		cur = &TimeQuality{
 			Id:      0,
 			PointId: pointId,
@@ -63,7 +68,7 @@ func (s *Service) Run(ctx context.Context, metrics []*pb.Metric) {
 		wg.Add(1)
 		go func(pointId uint32, items []*pb.Metric) {
 			defer wg.Done()
-			s.dowork(pointId, items)
+			s.compute(pointId, items)
 		}(pointId, items)
 	}
 

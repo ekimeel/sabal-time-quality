@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/ekimeel/sabal-pb/pb"
 	"github.com/ekimeel/sabal-plugin/pkg/metric_utils"
 	"github.com/ekimeel/sabal-plugin/pkg/plugin"
 
@@ -15,8 +16,6 @@ import (
 )
 
 const (
-	PluginName     = "timeQuality"
-	PluginVersion  = "v1.0"
 	configFilePath = "./ext/tq.json"
 	envSqlDb       = "sql.DB"
 )
@@ -33,9 +32,8 @@ func Install(env *plugin.Environment) error {
 		logger = log.New()
 	}
 
-	logger.Infof("installing plugin: %s@%s", PluginName, PluginVersion)
-
-	logger.Infof("configuring environment")
+	logger.WithField("plugin", Name()).Info("installing plugin")
+	logger.WithField("plugin", Name()).Info("configuring environment")
 	if err := setupDatabase(env); err != nil {
 		return err
 	}
@@ -57,23 +55,31 @@ func Install(env *plugin.Environment) error {
 
 // Process handles the plugin event. It logs the processing time and any errors that occur.
 func Process(ctx context.Context, event plugin.Event) {
-	if len(event.Metrics) == 0 {
-		log.Infof("no metrics to process")
-		return
+
+	if metrics, ok := event.Data.([]pb.Metric); ok {
+
+		if len(metrics) == 0 {
+			logger.WithField("plugin", Name()).Info("no metrics to process")
+			return
+		}
+
+		ref := metric_utils.ConvertToPointerSlice(metrics)
+
+		logger.WithField("plugin", Name()).Infof("no metrics to process")
+		log.Infof("running: %s", Name())
+		start := time.Now()
+
+		tq.GetService().Run(ctx, ref)
+		logger.WithField("plugin", Name()).
+			Infof("%s, processed [%d] in [%s]", Name(), len(metrics), time.Since(start))
+	} else {
+		// Handle case where Data does not hold a []pb.Metric
+		fmt.Println("Event Data is not of type []pb.Metric")
 	}
-
-	ref := metric_utils.ConvertToPointerSlice(event.Metrics)
-
-	log.Infof("running: %s", Name())
-	start := time.Now()
-
-	tq.GetService().Run(ctx, ref)
-
-	log.Infof("%s, processed [%d] in [%s]", Name(), len(event.Metrics), time.Since(start))
 }
 
 func Name() string {
-	return fmt.Sprintf("%s@%s", PluginName, PluginVersion)
+	return fmt.Sprintf("%s@%s", tq.PluginName, tq.PluginVersion)
 }
 
 func setupDatabase(env *plugin.Environment) error {
@@ -81,7 +87,7 @@ func setupDatabase(env *plugin.Environment) error {
 		tq.DB = val.(*sql.DB)
 		log.Infof("sucessfully found %s", envSqlDb)
 	} else {
-		return fmt.Errorf("plugin %s requireds a valid %s value", PluginName, envSqlDb)
+		return fmt.Errorf("plugin %s requireds a valid %s value", tq.PluginName, envSqlDb)
 	}
 	return nil
 }
